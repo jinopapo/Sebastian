@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import readline from 'node:readline';
-import { Agent, run } from '@openai/agents';
+import { Agent, run, webSearchTool, user, AgentInputItem } from '@openai/agents';
 import { terminalTool } from './tools/terminal/terminal.js';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
@@ -37,10 +37,16 @@ async function main() {
     name: 'Terminal Agent',
     instructions,
     model,
-    tools: [terminalTool],
+    tools: [
+      terminalTool,
+      webSearchTool()
+    ],
     // If you want provider-specific settings (e.g., GPT-5 reasoning/verbosity),
     // put them under providerData. Kept empty for broad compatibility.
-    modelSettings: { providerData: {} },
+    modelSettings: {
+      reasoning: { effort: 'minimal' },
+      text: { verbosity: 'low' },
+    },
   });
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -51,7 +57,7 @@ async function main() {
   }
 
   // Accumulate conversation for the current process lifetime
-  let history: any[] = [];
+  let history: AgentInputItem[] = [];
   // Track token usage across turns in this process
   let sessionUsage = { requests: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0 };
   const tokenLimit = Number(process.env.TOKEN_LIMIT || '') || undefined;
@@ -63,13 +69,10 @@ async function main() {
     if (input.trim().toLowerCase() === 'exit') break;
 
     try {
-      // Build input with accumulated history + current user message
-      const turnInput = history.length
-        ? [...history, { type: 'message', role: 'user', content: input }]
-        : input;
+      history.push(user(input));
 
       // Stream model tokens
-      const streamed = await run(agent, turnInput, { stream: true });
+      const streamed = await run(agent, history, { stream: true });
       const textStream = streamed.toTextStream({ compatibleWithNodeStreams: true });
 
       await new Promise<void>((resolve, reject) => {
