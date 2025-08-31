@@ -61,18 +61,30 @@ async function main() {
   // Track token usage across turns in this process
   let sessionUsage = { requests: 0, inputTokens: 0, outputTokens: 0, totalTokens: 0 };
   const tokenLimit = Number(process.env.TOKEN_LIMIT || '') || undefined;
+  let previousResponseId = null
 
   while (true) {
     const prompt = `> [in:${sessionUsage.inputTokens}] `;
-    const input = await question(prompt);
-    if (!input) continue;
-    if (input.trim().toLowerCase() === 'exit') break;
+    const userInput = await question(prompt);
+    if (!userInput) continue;
+    if (userInput.trim().toLowerCase() === 'exit') break;
 
     try {
-      history.push(user(input));
+      history.push(user(userInput));
+
+      let input
+      if(model.includes('gpt-5')) {
+        input = userInput;
+      } else {
+        input = history
+      }
+
 
       // Stream model tokens
-      const streamed = await run(agent, history, { stream: true });
+      const streamed = await run(agent, input, { 
+        stream: true, 
+        previousResponseId: previousResponseId 
+      });
       const textStream = streamed.toTextStream({ compatibleWithNodeStreams: true });
 
       await new Promise<void>((resolve, reject) => {
@@ -86,6 +98,7 @@ async function main() {
       await streamed.completed;
       // Update in-memory history for the next turn
       history = streamed.history;
+      previousResponseId = streamed.lastResponseId;
       // Aggregate usage for this run and session
       const runUsage = (streamed.rawResponses || []).reduce(
         (acc: any, r: any) => {
