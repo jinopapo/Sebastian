@@ -3,10 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
+  "bin": {
+    "ff": "dist/ff.cjs"
+  },
   "scripts": {
     "dev": "tsx src/cli.ts",
-    "start": "node dist/index.js",
-    "build": "tsc -p ."
+    "start": "node dist/ff.cjs",
+    "build": "node scripts/build.mjs",
+    "build:watch": "node scripts/build.mjs --watch",
+    "postbuild": "chmod +x dist/ff.cjs || true",
+    "prepare": "npm run build"
   },
   "dependencies": {
     "@openai/agents": "^0.1.0",
@@ -15,6 +21,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "esbuild": "^0.23.0",
     "tsx": "^4.16.2",
     "typescript": "^5.6.3"
   }

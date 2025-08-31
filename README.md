@@ -14,8 +14,14 @@
 **Run**
 
 - Dev (TS directly): `npm run dev`
-- Build: `npm run build`
+- Build (esbuild bundle): `npm run build`
 - Start built: `npm start`
+
+**Global Install (CLI)**
+
+- Local repo: `npm i -g .` then run `terminal-agent`
+- From Git (example): `npm i -g git+ssh://<repo-url>.git` then `terminal-agent`
+- The executable is bundled to a single file at `dist/cli.js` and exposed via the `terminal-agent` bin.
 
 **Usage**
 
@@ -41,4 +47,3 @@
 - `src/terminalTool.ts`: コマンド実行（タイムアウト・ストリーム対応）
 - `src/safety.ts`: 引数スキーマと危険コマンド検知
 - `src/tools/terminal.ts`: Agentsツール定義
-
