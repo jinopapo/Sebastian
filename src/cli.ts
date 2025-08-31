@@ -37,18 +37,19 @@ async function main() {
   }
 
   const agent = new Agent({
-    name: 'Terminal Agent',
+    name: 'File System Agent',
     instructions,
     model,
     tools: [
       terminalTool,
-      webSearchTool()
+      // webSearchTool()
     ],
     // If you want provider-specific settings (e.g., GPT-5 reasoning/verbosity),
     // put them under providerData. Kept empty for broad compatibility.
     modelSettings: {
       reasoning: { effort: 'minimal' },
       text: { verbosity: 'low' },
+      toolChoice: 'required'
     },
   });
 
