@@ -1,6 +1,6 @@
 import 'dotenv/config';
 import readline from 'node:readline';
-import { Agent, run, webSearchTool, user, AgentInputItem } from '@openai/agents';
+import { Agent, run, webSearchTool, user, AgentInputItem,setOpenAIAPI } from '@openai/agents';
 import { terminalTool } from './tools/terminal/terminal.js';
 import { readFile } from 'node:fs/promises';
 import { resolve, extname } from 'node:path';
@@ -31,6 +31,9 @@ async function main() {
     }
   } catch {
     // Fallback to embedded default if file not found
+  }
+  if (!model.includes('gpt-5')){
+    setOpenAIAPI('chat_completions');
   }
 
   const agent = new Agent({
